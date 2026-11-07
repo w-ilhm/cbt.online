@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBT Pro System - Database Terpisah Edition</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS (xlsx) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Chart.js untuk Grafik Kecermatan -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- HEADER / NAVBAR -->
+    <header class="bg-indigo-700 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                🎓 CBT Pro System <span class="text-xs bg-indigo-500 px-2 py-0.5 rounded text-indigo-100">Cloud DB</span>
+            </h1>
+            <div id="nav-user-info" class="text-sm font-medium hidden flex items-center gap-3">
+                <img id="nav-profile-img" src="" class="w-8 h-8 rounded-full border-2 border-red-500 object-cover hidden">
+                <span>Login: <span id="logged-user-name" class="underline font-bold"></span></span>
+                <button onclick="logout()" class="bg-indigo-600 hover:bg-indigo-800 px-3 py-1 rounded text-xs transition font-semibold">Keluar</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTAINER UTAMA -->
+    <main class="max-w-6xl w-full mx-auto p-4 md:p-6 my-auto">
+
+        <!-- 1. HALAMAN LOGIN & PILIHAN AWAL DAFTAR -->
+        <section id="auth-section" class="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-auto">
+            <div class="text-center mb-6">
+                <span class="text-4xl">🔐</span>
+                <h2 class="text-2xl font-bold mt-2">Portal Masuk CBT</h2>
+                <p class="text-slate-500 text-xs mt-1">Sistem Ujian CAT Online Terintegrasi Cloud</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Email / ID</label>
+                    <input type="text" id="login-username" placeholder="Masukkan ID atau Email..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Password Akun</label>
+                    <input type="password" id="login-password" placeholder="Masukkan password..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
+                </div>
+                <button onclick="processLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition shadow-md">
+                    Masuk Sistem
+                </button>
+                
+                <div class="flex justify-between items-center pt-2 text-xs">
+                    <button onclick="showRoleSelectionModal()" class="text-indigo-600 font-bold hover:underline">Daftar Akun Baru</button>
+                    <button onclick="forgotPassword()" class="text-slate-500 hover:underline">Lupa Password?</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. DASHBOARD GURU -->
+        <section id="teacher-dashboard" class="hidden bg-white rounded-2xl shadow-xl p-6 md:p-8">
+            <div class="flex justify-between items-center mb-6 pb-4 border-b">
+                <div class="flex items-center gap-3">
+                    <img id="teacher-profile-img" class="w-12 h-12 rounded-full border-2 border-red-600 object-cover">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800" id="teacher-name-display">-</h2>
+                        <p class="text-xs text-slate-500" id="teacher-sub-display">-</p>
+                    </div>
+                </div>
+                <span class="text-xs bg-indigo-100 text-indigo-700 font-semibold px-3 py-1 rounded-full">Panel Guru</span>
+            </div>
+
+            <!-- Upload Paket Soal -->
+            <div class="bg-slate-50 border p-5 rounded-xl space-y-4 shadow-sm mb-6">
+                <h3 class="font-bold text-sm text-slate-700">Buat / Unggah Paket Soal Baru</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Kategori Utama</label>
+                        <select id="exam-category" onchange="updateSubCategoryOptions()" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+                            <option value="AKADEMIK">Akademik</option>
+                            <option value="PSIKOLOGI">Psikologi</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Sub Materi / Mapel</label>
+                        <select id="exam-subcategory" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Target Peminatan</label>
+                        <select id="exam-target-interest" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+                            <option value="SEMUA">Semua Peminatan</option>
+                            <option value="AKPOL">AKPOL</option>
+                            <option value="TARUNA TNI">TARUNA TNI</option>
+                            <option value="BINTARA POLRI">BINTARA POLRI</option>
+                            <option value="BINTARA TNI">BINTARA TNI</option>
+                            <option value="KEDINASAN">KEDINASAN</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Nama Paket Soal</label>
+                        <input type="text" id="package-name" placeholder="Contoh: Tryout Matematika Dasar" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Token Ujian</label>
+                        <input type="text" id="exam-token" value="CAT2026" class="w-full border border-slate-300 rounded-lg p-2 text-sm uppercase font-mono bg-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">File Excel Soal</label>
+                    <input type="file" id="excel-file" accept=".xlsx, .xls" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+                </div>
+                <button onclick="saveExamPackage()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition shadow-sm">
+                    Simpan & Terbitkan Paket ke Cloud
+                </button>
+            </div>
+
+            <!-- Rekap Nilai Siswa -->
+            <div>
+                <h3 class="font-bold text-sm text-slate-700 mb-2">📊 Rekap & Histori Hasil Ujian Siswa</h3>
+                <div class="overflow-x-auto border rounded-xl shadow-sm">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-100 border-b text-slate-600">
+                            <tr>
+                                <th class="p-3">Nama Siswa</th>
+                                <th class="p-3">Peminatan</th>
+                                <th class="p-3">Paket</th>
+                                <th class="p-3">Hasil / Nilai</th>
+                                <th class="p-3">Status / Ket</th>
+                                <th class="p-3">Waktu</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                            <tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data dari server...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. DASHBOARD SISWA -->
+        <section id="student-dashboard" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-5">
+                    <img id="student-profile-img" class="w-20 h-20 rounded-full border-4 border-red-600 object-cover shadow-md">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800" id="student-name-display">-</h2>
+                        <p class="text-sm text-slate-500 mt-0.5">Peminatan: <span id="student-interest-display" class="font-semibold text-indigo-600">-</span></p>
+                        <p class="text-xs text-slate-400">Asal Sekolah: <span id="student-school-display">-</span> | Umur: <span id="student-age-display">-</span> th</p>
+                    </div>
+                </div>
+                <button onclick="openExamCatalog()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl transition shadow-md flex items-center gap-2">
+                    📚 Daftar Ujian Tersedia
+                </button>
+            </div>
+
+            <!-- Histori Ujian Siswa -->
+            <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+                <h3 class="font-bold text-base text-slate-800 mb-4">📜 Riwayat & Histori Ujian Anda</h3>
+                <div class="overflow-x-auto border rounded-xl shadow-sm">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-100 border-b text-slate-600">
+                            <tr>
+                                <th class="p-3">Paket Ujian</th>
+                                <th class="p-3">Skor / Nilai</th>
+                                <th class="p-3">Status</th>
+                                <th class="p-3">Waktu Pengerjaan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="student-history-tbody">
+                            <tr><td colspan="4" class="p-4 text-center text-slate-400">Belum ada riwayat ujian.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. KATALOG DAFTAR UJIAN -->
+        <section id="student-exam-catalog" class="hidden bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-6">
+            <div class="flex justify-between items-center border-b pb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">📂 Katalog Daftar Ujian</h2>
+                    <p class="text-xs text-slate-500">Pilih kategori materi dan sub-materi sesuai peminatan Anda.</p>
+                </div>
+                <button onclick="backToStudentDashboard()" class="bg-slate-200 hover:bg-slate-300 px-4 py-2 rounded-xl text-xs font-semibold">Kembali ke Dashboard</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="space-y-4 border-r pr-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Kategori Materi</label>
+                        <select id="catalog-category" onchange="renderSubCategoryFilter()" class="w-full border rounded-lg p-2 text-sm bg-white">
+                            <option value="AKADEMIK">Akademik</option>
+                            <option value="PSIKOLOGI">Psikologi</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Sub Materi / Mapel</label>
+                        <div id="catalog-subcategory-list" class="space-y-1.5 mt-2"></div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2 space-y-4">
+                    <h3 class="font-bold text-sm text-slate-700" id="catalog-list-title">Daftar Paket Soal</h3>
+                    <div id="catalog-packages-container" class="space-y-3"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. RUANG UJIAN -->
+        <section id="exam-room" class="hidden bg-white rounded-2xl shadow-xl p-6 md:p-8">
+            <div class="flex justify-between items-center pb-4 mb-6 border-b">
+                <div>
+                    <h3 id="display-student-info" class="font-bold text-slate-800">Peserta: -</h3>
+                    <p class="text-xs text-slate-500">Paket: <span id="display-package-name" class="font-semibold text-indigo-600">-</span></p>
+                </div>
+                <div id="timer-box" class="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-2 rounded-xl text-sm font-mono font-bold">
+                    ⏱️ <span id="timer-display">00:00</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div class="lg:col-span-3 space-y-6">
+                    <div class="flex justify-between items-center">
+                        <span id="question-number" class="text-xs font-bold uppercase bg-indigo-100 text-indigo-700 px-3 py-1 rounded-md">Soal No. 1</span>
+                    </div>
+
+                    <p id="question-text" class="text-base font-medium text-slate-800 leading-relaxed">Memuat soal...</p>
+                    <div id="options-container" class="space-y-3 pt-2"></div>
+
+                    <div class="flex justify-between items-center pt-6 border-t">
+                        <button onclick="prevQuestion()" id="btn-prev" class="bg-slate-200 px-4 py-2 rounded-xl text-sm font-semibold">Sebelumnya</button>
+                        <button onclick="toggleFlagQuestion()" id="btn-flag" class="bg-amber-100 text-amber-800 px-4 py-2 rounded-xl text-sm font-semibold">⭐ Ragu-ragu</button>
+                        <button onclick="nextQuestion()" id="btn-next" class="bg-indigo-600 text-white px-6 py-2 rounded-xl text-sm font-semibold">Selanjutnya</button>
+                    </div>
+                </div>
+
+                <div class="border-l pl-6">
+                    <h4 class="font-bold text-xs uppercase text-slate-500 mb-3">Navigasi Soal</h4>
+                    <div id="grid-palette" class="grid grid-cols-5 gap-2 max-h-72 overflow-y-auto"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. HALAMAN HASIL UJIAN -->
+        <section id="result-screen" class="hidden bg-white rounded-2xl shadow-xl p-8 text-center max-w-2xl mx-auto">
+            <div class="text-5xl mb-2">🏆</div>
+            <h2 class="text-2xl font-bold mb-1">Ujian Selesai!</h2>
+            <p class="text-slate-500 text-sm mb-6">Hasil evaluasi kinerja ujian Anda telah diterbitkan.</p>
+            
+            <div id="standard-result" class="bg-slate-50 rounded-xl p-4 mb-6 border hidden">
+                <p class="text-xs text-slate-500 uppercase font-semibold">Skor Akhir</p>
+                <p id="final-score" class="text-4xl font-extrabold text-indigo-600 mt-1">0</p>
+            </div>
+
+            <div id="skd-result" class="bg-slate-50 rounded-xl p-4 mb-6 border text-left hidden space-y-2">
+                <h4 class="font-bold border-b pb-2 text-center text-slate-700">Hasil Tes SKD Kedinasan</h4>
+                <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div class="p-2 bg-white rounded border">TWK: <b id="score-twk">0</b> (Min 60)</div>
+                    <div class="p-2 bg-white rounded border">TIU: <b id="score-tiu">0</b> (Min 85)</div>
+                    <div class="p-2 bg-white rounded border">TKP: <b id="score-tkp">0</b> (Min 156)</div>
+                </div>
+                <div class="text-center pt-2">
+                    <span id="skd-status-badge" class="px-4 py-1.5 rounded-full font-bold text-sm"></span>
+                </div>
+            </div>
+
+            <div id="kecermatan-result" class="hidden mb-6">
+                <h4 class="font-bold text-sm mb-3">Grafik Performa Tes Kecermatan (10 Kolom)</h4>
+                <canvas id="kecermatanChart" class="w-full max-h-64"></canvas>
+            </div>
+
+            <button onclick="returnToDashboardFromExam()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition shadow-md">Kembali ke Dashboard Siswa</button>
+        </section>
+
+    </main>
+
+    <!-- MODAL 1: PILIH ROLE PENDAFTARAN (GURU / SISWA) -->
+    <div id="role-select-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center space-y-4">
+            <h3 class="text-lg font-bold">Pilih Status Pendaftaran</h3>
+            <p class="text-xs text-slate-500">Silakan pilih apakah Anda mendaftar sebagai Guru atau Siswa.</p>
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="openRegisterForm('student')" class="bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-bold p-4 rounded-xl transition flex flex-col items-center gap-2">
+                    <span class="text-2xl">👨‍🎓</span>
+                    <span>Siswa</span>
+                </button>
+                <button onclick="openRegisterForm('teacher')" class="bg-indigo-50 hover:bg-indigo-100 border border-indigo-300 text-indigo-800 font-bold p-4 rounded-xl transition flex flex-col items-center gap-2">
+                    <span class="text-2xl">👨‍🏫</span>
+                    <span>Guru</span>
+                </button>
+            </div>
+            <button onclick="hideRoleSelectModal()" class="w-full text-xs text-slate-400 hover:underline pt-2">Batal</button>
+        </div>
+    </div>
+
+    <!-- MODAL 2: FORM PENDAFTARAN AKUN -->
+    <div id="register-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 id="reg-modal-title" class="text-lg font-bold mb-4">Pendaftaran Akun Baru</h3>
+            
+            <div class="space-y-3 text-xs">
+                <input type="hidden" id="reg-role">
+
+                <div>
+                    <label class="font-semibold">Nama Lengkap</label>
+                    <input type="text" id="reg-name" class="w-full border rounded p-2 mt-1">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="font-semibold">Umur</label>
+                        <input type="number" id="reg-age" class="w-full border rounded p-2 mt-1">
+                    </div>
+                    <div>
+                        <label class="font-semibold">No HP</label>
+                        <input type="text" id="reg-phone" class="w-full border rounded p-2 mt-1">
+                    </div>
+                </div>
+
+                <!-- Field Khusus Siswa -->
+                <div id="student-fields" class="space-y-3 hidden">
+                    <div>
+                        <label class="font-semibold">Alamat</label>
+                        <input type="text" id="reg-address" class="w-full border rounded p-2 mt-1">
+                    </div>
+                    <div>
+                        <label class="font-semibold">Asal Sekolah</label>
+                        <input type="text" id="reg-school" class="w-full border rounded p-2 mt-1">
+                    </div>
+                    <div>
+                        <label class="font-semibold">Peminatan Ujian</label>
+                        <select id="reg-interest" onchange="toggleKedinasanInput()" class="w-full border rounded p-2 mt-1">
+                            <option value="AKPOL">AKPOL</option>
+                            <option value="TARUNA TNI">TARUNA TNI</option>
+                            <option value="BINTARA POLRI">BINTARA POLRI</option>
+                            <option value="BINTARA TNI">BINTARA TNI</option>
+                            <option value="KEDINASAN">KEDINASAN</option>
+                        </select>
+                    </div>
+                    <div id="kedinasan-opt" class="hidden">
+                        <label class="font-semibold">Instansi Kedinasan</label>
+                        <select id="reg-instansi" class="w-full border rounded p-2 mt-1">
+                            <option value="IPDN">IPDN</option>
+                            <option value="PKN STAN">PKN STAN</option>
+                            <option value="POLSTAT STIS">POLSTAT STIS</option>
+                            <option value="STIN">STIN</option>
+                            <option value="STMKG">STMKG</option>
+                            <option value="POLTEK SSN">POLTEK SSN</option>
+                            <option value="KEMENHUB">Sekolah Kemenhub</option>
+                            <option value="POLTEKIP/POLTEKIM">POLTEKIP / POLTEKIM</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Field Khusus Guru -->
+                <div id="teacher-fields" class="space-y-3 hidden">
+                    <div>
+                        <label class="font-semibold">Jurusan / Bidang Studi</label>
+                        <input type="text" id="reg-major" class="w-full border rounded p-2 mt-1">
+                    </div>
+                    <div>
+                        <label class="font-semibold">Kategori Spesialisasi Guru</label>
+                        <select id="reg-subject-category" class="w-full border rounded p-2 mt-1">
+                            <option value="AKADEMIK">Akademik</option>
+                            <option value="PSIKOLOGI">Psikologi</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="font-semibold text-rose-600">Unggah Foto Profil (Wajib Berlatar Merah)</label>
+                    <input type="file" id="reg-photo" accept="image/*" class="w-full border rounded p-2 mt-1">
+                </div>
+
+                <div>
+                    <label class="font-semibold">Email</label>
+                    <input type="email" id="reg-email" class="w-full border rounded p-2 mt-1">
+                </div>
+                <div>
+                    <label class="font-semibold">Password</label>
+                    <input type="password" id="reg-password" class="w-full border rounded p-2 mt-1">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 mt-6">
+                <button onclick="hideRegisterModal()" class="px-4 py-2 text-slate-500">Batal</button>
+                <button onclick="processRegister()" class="px-5 py-2 bg-indigo-600 text-white rounded-lg font-semibold">Simpan Akun ke Cloud</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
+        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwR4FQ2pSOLAkF5KtmfNtDkb2fwD2_8qrl_f8ZgzyjlotGVnSZ7mzxsvTwc8gAjNUh5/exec";        
+
+        let loggedUser = null;
+        let packages = [];
+        let examHistory = [];
+        let currentPackage = null;
+        let currentIdx = 0;
+        let studentAnswers = {};
+        let flaggedQuestions = {};
+        let startTime = 0;
+        let deadline = 0;
+        let timeLeft = 0;
+        let timerInterval = null;
+
+        const subCategoriesMap = {
+            AKADEMIK: ['Matematika', 'Penalaran Numerik', 'Pengetahuan Umum', 'Wawasan Kebangsaan', 'Bahasa Indonesia'],
+            PSIKOLOGI: ['Kecerdasan', 'Kecermatan', 'Tes Koran (Pauli/Kraepelin)', 'Kepribadian (TKP/EPPS)']
+        };
+
+        function hideAllSections() {
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('teacher-dashboard').classList.add('hidden');
+            document.getElementById('student-dashboard').classList.add('hidden');
+            document.getElementById('student-exam-catalog').classList.add('hidden');
+            document.getElementById('exam-room').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+        }
+
+        // --- MANAJEMEN MODAL PENDAFTARAN SESUAI PERMINTAAN ---
+        function showRoleSelectionModal() {
+            document.getElementById('role-select-modal').classList.remove('hidden');
+        }
+        function hideRoleSelectModal() {
+            document.getElementById('role-select-modal').classList.add('hidden');
+        }
+
+        function openRegisterForm(role) {
+            hideRoleSelectModal();
+            document.getElementById('reg-role').value = role;
+            document.getElementById('student-fields').classList.toggle('hidden', role !== 'student');
+            document.getElementById('teacher-fields').classList.toggle('hidden', role !== 'teacher');
+            document.getElementById('reg-modal-title').innerText = role === 'student' ? 'Pendaftaran Akun Siswa' : 'Pendaftaran Akun Guru';
+            document.getElementById('register-modal').classList.remove('hidden');
+        }
+
+        function hideRegisterModal() {
+            document.getElementById('register-modal').classList.add('hidden');
+        }
+
+        function toggleKedinasanInput() {
+            const interest = document.getElementById('reg-interest').value;
+            document.getElementById('kedinasan-opt').classList.toggle('hidden', interest !== 'KEDINASAN');
+        }
+
+        // Kompresi Gambar
+        function compressImage(file, callback) {
+            if (!file) return callback('');
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const maxWidth = 150;
+                    const scale = maxWidth / img.width;
+                    canvas.width = maxWidth;
+                    canvas.height = img.height * scale;
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    callback(canvas.toDataURL('image/jpeg', 0.7));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // PROSES REGISTER KE GOOGLE SHEETS (CLOUD)
+        async function processRegister() {
+            const role = document.getElementById('reg-role').value;
+            const name = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+            const photoFile = document.getElementById('reg-photo').files[0];
+
+            if(!name || !email || !password) {
+                Swal.fire('Gagal', 'Mohon lengkapi semua kolom wajib!', 'error');
+                return;
+            }
+
+            Swal.showLoading();
+            compressImage(photoFile, async function(compressedPhoto) {
+                const payload = {
+                    action: 'register',
+                    role: role,
+                    name: name,
+                    email: email,
+                    password: password,
+                    age: role === 'student' ? document.getElementById('reg-age').value : '',
+                    school: role === 'student' ? document.getElementById('reg-school').value : '',
+                    interest: role === 'student' ? document.getElementById('reg-interest').value : '',
+                    instansi: role === 'student' && document.getElementById('reg-interest').value === 'KEDINASAN' ? document.getElementById('reg-instansi').value : '',
+                    subjectCategory: role === 'teacher' ? document.getElementById('reg-subject-category').value : '',
+                    photo: compressedPhoto || ''
+                };
+
+                try {
+                    const response = await fetch(BACKEND_URL, {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+                    const res = await response.json();
+                    Swal.close();
+
+                    if(res.status === 'success') {
+                        Swal.fire('Berhasil', 'Akun berhasil dibuat di Database Cloud. Silakan login!', 'success');
+                        hideRegisterModal();
+                    } else {
+                        Swal.fire('Gagal', res.message, 'error');
+                    }
+                } catch (err) {
+                    Swal.close();
+                    Swal.fire('Error', 'Gagal terhubung ke server cloud: ' + err, 'error');
+                }
+            });
+        }
+
+        // PROSES LOGIN DARI GOOGLE SHEETS (CLOUD)
+        async function processLogin() {
+            const u = document.getElementById('login-username').value.trim();
+            const p = document.getElementById('login-password').value.trim();
+
+            if(!u || !p) {
+                Swal.fire('Peringatan', 'Masukkan Email dan Password!', 'warning');
+                return;
+            }
+
+            Swal.showLoading();
+            try {
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'login', email: u, password: p })
+                });
+                const res = await response.json();
+                Swal.close();
+
+                if(res.status === 'success') {
+                    loggedUser = res.user;
+                    hideAllSections();
+                    
+                    if(loggedUser.photo) {
+                        const img = document.getElementById('nav-profile-img');
+                        img.src = loggedUser.photo;
+                        img.classList.remove('hidden');
+                    }
+                    document.getElementById('nav-user-info').classList.remove('hidden');
+                    document.getElementById('logged-user-name').innerText = loggedUser.name;
+
+                    // Ambil data pendukung dari server
+                    await loadCloudData();
+
+                    if(loggedUser.role === 'teacher') {
+                        document.getElementById('teacher-dashboard').classList.remove('hidden');
+                        document.getElementById('teacher-name-display').innerText = loggedUser.name;
+                        document.getElementById('teacher-sub-display').innerText = `Kategori Spesialisasi: ${loggedUser.subjectCategory || '-'}`;
+                        if(loggedUser.photo) document.getElementById('teacher-profile-img').src = loggedUser.photo;
+                        updateSubCategoryOptions();
+                        renderHistoryTable();
+                    } else {
+                        renderStudentDashboard();
+                    }
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            } catch (err) {
+                Swal.close();
+                Swal.fire('Error', 'Gagal login ke cloud: ' + err, 'error');
+            }
+        }
+
+        async function loadCloudData() {
+            try {
+                // Ambil Packages
+                const pkgRes = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'getPackages' })
+                });
+                const pkgData = await pkgRes.json();
+                if(pkgData.status === 'success') packages = pkgData.packages;
+
+                // Ambil History
+                const histRes = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'getHistory' })
+                });
+                const histData = await histRes.json();
+                if(histData.status === 'success') examHistory = histData.history;
+            } catch(e) {
+                console.error("Gagal sinkronisasi data cloud:", e);
+            }
+        }
+
+        function updateSubCategoryOptions() {
+            const cat = loggedUser.role === 'teacher' ? loggedUser.subjectCategory : document.getElementById('catalog-category').value;
+            const subDropdown = document.getElementById('exam-subcategory');
+            if(subDropdown) {
+                subDropdown.innerHTML = '';
+                (subCategoriesMap[cat] || []).forEach(sub => {
+                    const opt = document.createElement('option');
+                    opt.value = sub;
+                    opt.textContent = sub;
+                    subDropdown.appendChild(opt);
+                });
+            }
+        }
+
+        function renderStudentDashboard() {
+            hideAllSections();
+            document.getElementById('student-dashboard').classList.remove('hidden');
+            document.getElementById('student-name-display').innerText = loggedUser.name;
+            document.getElementById('student-interest-display').innerText = `${loggedUser.interest} ${loggedUser.instansi ? '('+loggedUser.instansi+')' : ''}`;
+            document.getElementById('student-school-display').innerText = loggedUser.school || '-';
+            document.getElementById('student-age-display').innerText = loggedUser.age || '-';
+            if(loggedUser.photo) document.getElementById('student-profile-img').src = loggedUser.photo;
+
+            renderStudentHistory();
+        }
+
+        function renderStudentHistory() {
+            const tbody = document.getElementById('student-history-tbody');
+            tbody.innerHTML = '';
+            const myHistory = examHistory.filter(h => h.studentName === loggedUser.name);
+
+            if(myHistory.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Belum ada riwayat ujian.</td></tr>`;
+                return;
+            }
+
+            myHistory.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b hover:bg-slate-50';
+                tr.innerHTML = `
+                    <td class="p-3 font-medium">${item.packageName}</td>
+                    <td class="p-3 font-bold text-indigo-600">${item.scoreSummary}</td>
+                    <td class="p-3 text-xs font-semibold">${item.statusInfo}</td>
+                    <td class="p-3 text-xs text-slate-500">${item.timestamp}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function openExamCatalog() {
+            Swal.showLoading();
+            await loadCloudData();
+            Swal.close();
+            hideAllSections();
+            document.getElementById('student-exam-catalog').classList.remove('hidden');
+            renderSubCategoryFilter();
+        }
+
+        function backToStudentDashboard() { renderStudentDashboard(); }
+
+        function renderSubCategoryFilter() {
+            const cat = document.getElementById('catalog-category').value;
+            const container = document.getElementById('catalog-subcategory-list');
+            container.innerHTML = '';
+
+            (subCategoriesMap[cat] || []).forEach((sub, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition ${idx === 0 ? 'bg-indigo-600 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`;
+                btn.textContent = sub;
+                btn.onclick = () => {
+                    Array.from(container.children).forEach(b => b.className = 'w-full text-left px-3 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700');
+                    btn.className = 'w-full text-left px-3 py-2 rounded-lg text-xs font-semibold bg-indigo-600 text-white';
+                    renderCatalogPackages(cat, sub);
+                };
+                container.appendChild(btn);
+            });
+
+            if((subCategoriesMap[cat] || []).length > 0) {
+                renderCatalogPackages(cat, subCategoriesMap[cat][0]);
+            }
+        }
+
+        function renderCatalogPackages(category, subcategory) {
+            const container = document.getElementById('catalog-packages-container');
+            document.getElementById('catalog-list-title').innerText = `Paket Soal: ${subcategory} (${category})`;
+            container.innerHTML = '';
+
+            const filtered = packages.filter(pkg => 
+                pkg.category === category && 
+                pkg.subcategory === subcategory && 
+                (pkg.targetInterest === 'SEMUA' || pkg.targetInterest === loggedUser.interest)
+            );
+
+            if(filtered.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic">Belum ada paket soal untuk kategori ini atau tidak sesuai dengan peminatan ${loggedUser.interest}.</p>`;
+                return;
+            }
+
+            filtered.forEach(pkg => {
+                const card = document.createElement('div');
+                card.className = 'border p-4 rounded-xl flex justify-between items-center bg-slate-50 hover:bg-white transition shadow-sm';
+                card.innerHTML = `
+                    <div>
+                        <h4 class="font-bold text-sm text-slate-800">${pkg.name}</h4>
+                        <p class="text-xs text-slate-500">Pembuat: ${pkg.teacherName} | Soal: ${pkg.questions.length} Butir</p>
+                    </div>
+                    <button onclick="promptTokenAndStart(${pkg.id})" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-lg">Kerjakan</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function promptTokenAndStart(pkgId) {
+            const pkg = packages.find(p => p.id == pkgId);
+            Swal.fire({
+                title: `Masukkan Token: ${pkg.name}`,
+                input: 'text',
+                inputAttributes: { autocapitalize: 'off' },
+                showCancelButton: true,
+                confirmButtonText: 'Mulai Ujian',
+                cancelButtonText: 'Batal'
+            }).then(result => {
+                if(result.isConfirmed) {
+                    if((result.value || '').toUpperCase().trim() === pkg.token) {
+                        initOrResumeExam(pkg);
+                    } else {
+                        Swal.fire('Token Salah', 'Token ujian yang Anda masukkan tidak valid.', 'error');
+                    }
+                }
+            });
+        }
+
+        function renderHistoryTable() {
+            const tbody = document.getElementById('history-table-body');
+            tbody.innerHTML = '';
+            if(examHistory.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada data pengerjaan.</td></tr>`;
+                return;
+            }
+            examHistory.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b hover:bg-slate-50';
+                tr.innerHTML = `
+                    <td class="p-3 font-medium">${item.studentName}</td>
+                    <td class="p-3 text-slate-600">${item.interest || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.packageName}</td>
+                    <td class="p-3 font-bold text-indigo-600">${item.scoreSummary}</td>
+                    <td class="p-3 text-xs font-semibold">${item.statusInfo}</td>
+                    <td class="p-3 text-xs text-slate-500">${item.timestamp}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function initOrResumeExam(pkg) {
+            currentPackage = pkg;
+            startTime = new Date().getTime();
+            let durationMinutes = pkg.duration || 30;
+            deadline = startTime + (durationMinutes * 60 * 1000);
+            timeLeft = durationMinutes * 60;
+            studentAnswers = {};
+            currentIdx = 0;
+
+            hideAllSections();
+            document.getElementById('exam-room').classList.remove('hidden');
+            document.getElementById('display-student-info').innerText = `Peserta: ${loggedUser.name}`;
+            document.getElementById('display-package-name').innerText = pkg.name;
+
+            renderGridPalette();
+            loadQuestion();
+            startAbsoluteTimer();
+        }
+
+        function startAbsoluteTimer() {
+            if(timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                let now = new Date().getTime();
+                timeLeft = Math.floor((deadline - now) / 1000);
+
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                
+                if(minutes < 0) minutes = 0;
+                if(seconds < 0) seconds = 0;
+
+                document.getElementById('timer-display').innerText = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    Swal.fire('Waktu Habis!', 'Waktu ujian Anda telah berakhir.', 'info').then(() => {
+                        finishExam();
+                    });
+                }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            const q = currentPackage.questions[currentIdx];
+            document.getElementById('question-number').innerText = `Soal No. ${currentIdx + 1} dari ${currentPackage.questions.length}`;
+            document.getElementById('question-text').innerText = q.pertanyaan;
+
+            const opts = document.getElementById('options-container');
+            opts.innerHTML = '';
+
+            ['A','B','C','D','E'].forEach(key => {
+                if(!q[key.toLowerCase()]) return;
+                const isChecked = studentAnswers[currentIdx] === key ? 'bg-indigo-50 border-indigo-500 font-medium' : 'border-slate-200';
+                const label = document.createElement('label');
+                label.className = `flex items-center gap-3 p-3 rounded-xl border cursor-pointer hover:bg-slate-50 transition ${isChecked}`;
+                label.innerHTML = `
+                    <input type="radio" name="opt" value="${key}" ${studentAnswers[currentIdx] === key ? 'checked' : ''} onchange="selectAnswer('${key}')">
+                    <span class="font-bold">${key}.</span>
+                    <span>${q[key.toLowerCase()]}</span>
+                `;
+                opts.appendChild(label);
+            });
+
+            document.getElementById('btn-prev').disabled = currentIdx === 0;
+            document.getElementById('btn-next').innerText = currentIdx === currentPackage.questions.length - 1 ? 'Selesai' : 'Selanjutnya';
+            renderGridPalette();
+        }
+
+        function selectAnswer(key) {
+            studentAnswers[currentIdx] = key;
+            renderGridPalette();
+        }
+
+        function toggleFlagQuestion() {
+            flaggedQuestions[currentIdx] = !flaggedQuestions[currentIdx];
+            renderGridPalette();
+        }
+
+        function renderGridPalette() {
+            const palette = document.getElementById('grid-palette');
+            palette.innerHTML = '';
+            currentPackage.questions.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `w-9 h-9 rounded-lg text-xs font-bold transition flex items-center justify-center border `;
+                if(studentAnswers[idx]) btn.className += 'bg-emerald-500 text-white border-emerald-600';
+                else btn.className += 'bg-slate-100 text-slate-700 border-slate-300';
+                if(currentIdx === idx) btn.className += ' ring-2 ring-indigo-600';
+                btn.innerText = idx + 1;
+                btn.onclick = () => { currentIdx = idx; loadQuestion(); };
+                palette.appendChild(btn);
+            });
+        }
+
+        function nextQuestion() {
+            if(currentIdx < currentPackage.questions.length - 1) {
+                currentIdx++;
+                loadQuestion();
+            } else {
+                Swal.fire({
+                    title: 'Konfirmasi Selesai',
+                    text: 'Yakin ingin mengumpulkan jawaban ujian?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Kumpulkan'
+                }).then(res => { if(res.isConfirmed) finishExam(); });
+            }
+        }
+
+        function prevQuestion() {
+            if(currentIdx > 0) { currentIdx--; loadQuestion(); }
+        }
+
+        function getExcelVal(row, possibleKeys) {
+            const keys = Object.keys(row);
+            for (let key of keys) {
+                const cleanKey = key.trim().toLowerCase();
+                for (let p of possibleKeys) {
+                    if (cleanKey === p.toLowerCase()) return row[key];
+                }
+            }
+            return '';
+        }
+
+        // SIMPAN PAKET SOAL KE CLOUD (GOOGLE SHEETS)
+        async function saveExamPackage() {
+            const category = document.getElementById('exam-category').value;
+            const subcategory = document.getElementById('exam-subcategory').value;
+            const targetInterest = document.getElementById('exam-target-interest').value;
+            const name = document.getElementById('package-name').value.trim();
+            const token = document.getElementById('exam-token').value.toUpperCase().trim();
+            const fileInput = document.getElementById('excel-file');
+
+            if(loggedUser.subjectCategory && loggedUser.subjectCategory !== category) {
+                Swal.fire('Akses Ditolak', `Anda adalah guru kategori ${loggedUser.subjectCategory}, tidak dapat mengunggah soal kategori ${category}!`, 'error');
+                return;
+            }
+
+            if(!name || fileInput.files.length === 0) {
+                Swal.fire('Error', 'Nama paket dan file Excel wajib diisi!', 'error');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonSheet = XLSX.utils.sheet_to_json(worksheet);
+
+                const questions = jsonSheet.map((row, idx) => ({
+                    id: idx + 1,
+                    subtest: getExcelVal(row, ['subtest', 'sub test', 'sub_test']) || subcategory,
+                    pertanyaan: getExcelVal(row, ['pertanyaan', 'soal', 'question']) || '',
+                    a: getExcelVal(row, ['a', 'opsi a', 'option a']) || '',
+                    b: getExcelVal(row, ['b', 'opsi b', 'option b']) || '',
+                    c: getExcelVal(row, ['c', 'opsi c', 'option c']) || '',
+                    d: getExcelVal(row, ['d', 'opsi d', 'option d']) || '',
+                    e: getExcelVal(row, ['e', 'opsi e', 'option e']) || '',
+                    kunci: String(getExcelVal(row, ['jawabanbenar', 'jawaban benar', 'kunci', 'answer']) || 'A').toUpperCase().trim()
+                }));
+
+                const newPkg = {
+                    action: 'savePackage',
+                    id: Date.now(),
+                    teacherName: loggedUser.name,
+                    category: category,
+                    subcategory: subcategory,
+                    targetInterest: targetInterest,
+                    name: name,
+                    token: token,
+                    duration: 30,
+                    questions: questions
+                };
+
+                Swal.showLoading();
+                try {
+                    const response = await fetch(BACKEND_URL, {
+                        method: 'POST',
+                        body: JSON.stringify(newPkg)
+                    });
+                    const res = await response.json();
+                    Swal.close();
+
+                    if(res.status === 'success') {
+                        Swal.fire('Sukses', 'Paket soal berhasil diterbitkan ke Cloud!', 'success');
+                        document.getElementById('package-name').value = '';
+                        document.getElementById('excel-file').value = '';
+                        await loadCloudData();
+                    } else {
+                        Swal.fire('Gagal', res.message, 'error');
+                    }
+                } catch(err) {
+                    Swal.close();
+                    Swal.fire('Error', 'Gagal menyimpan ke cloud: ' + err, 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function finishExam() {
+            if(timerInterval) clearInterval(timerInterval);
+
+            hideAllSections();
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            let scoreSummary = '0';
+            let statusInfo = 'Selesai';
+
+            if(currentPackage.category === 'SKD' || currentPackage.name.includes('SKD')) {
+                document.getElementById('skd-result').classList.remove('hidden');
+                document.getElementById('standard-result').classList.add('hidden');
+                document.getElementById('kecermatan-result').classList.add('hidden');
+
+                let twkScore = 75, tiuScore = 90, tkpScore = 160;
+                document.getElementById('score-twk').innerText = twkScore;
+                document.getElementById('score-tiu').innerText = tiuScore;
+                document.getElementById('score-tkp').innerText = tkpScore;
+
+                const badge = document.getElementById('skd-status-badge');
+                if(twkScore >= 60 && tiuScore >= 85 && tkpScore >= 156) {
+                    badge.innerText = 'STATUS: MS (MEMENUHI SYARAT)';
+                    badge.className = 'bg-emerald-100 text-emerald-800 font-bold px-4 py-1.5 rounded-full';
+                    statusInfo = 'MS';
+                } else {
+                    badge.innerText = 'STATUS: TMS (TIDAK MEMENUHI SYARAT)';
+                    badge.className = 'bg-rose-100 text-rose-800 font-bold px-4 py-1.5 rounded-full';
+                    statusInfo = 'TMS';
+                }
+                scoreSummary = `TWK:${twkScore} | TIU:${tiuScore} | TKP:${tkpScore}`;
+
+            } else if (currentPackage.subcategory === 'Kecermatan') {
+                document.getElementById('kecermatan-result').classList.remove('hidden');
+                document.getElementById('standard-result').classList.add('hidden');
+                document.getElementById('skd-result').classList.add('hidden');
+
+                renderKecermatanChart();
+                scoreSummary = 'Selesai 10 Kolom';
+                statusInfo = 'Komplit';
+
+            } else {
+                document.getElementById('standard-result').classList.remove('hidden');
+                document.getElementById('skd-result').classList.add('hidden');
+                document.getElementById('kecermatan-result').classList.add('hidden');
+
+                let correct = 0;
+                let total = currentPackage.questions.length || 1;
+                currentPackage.questions.forEach((q, idx) => {
+                    if(studentAnswers[idx] === q.kunci) correct++;
+                });
+
+                let score = Math.round((correct / total) * 100);
+                document.getElementById('final-score').innerText = score;
+                scoreSummary = `${score} Poin`;
+                statusInfo = 'Selesai';
+            }
+
+            const historyItem = {
+                action: 'saveHistory',
+                studentName: loggedUser.name,
+                interest: loggedUser.interest || '-',
+                packageName: currentPackage.name,
+                scoreSummary: scoreSummary,
+                statusInfo: statusInfo,
+                timestamp: new Date().toLocaleString('id-ID')
+            };
+
+            // Kirim histori ke Google Sheets (Cloud)
+            try {
+                await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(historyItem)
+                });
+            } catch(e) {
+                console.error("Gagal menyimpan histori ke cloud:", e);
+            }
+        }
+
+        function returnToDashboardFromExam() { renderStudentDashboard(); }
+
+        function renderKecermatanChart() {
+            const ctx = document.getElementById('kecermatanChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['K1', 'K2', 'K3', 'K4', 'K5', 'K6', 'K7', 'K8', 'K9', 'K10'],
+                    datasets: [
+                        { label: 'Terjawab', data: [45, 48, 46, 49, 47, 44, 46, 48, 45, 47], backgroundColor: '#6366f1' },
+                        { label: 'Benar', data: [42, 45, 43, 47, 44, 41, 43, 45, 42, 44], backgroundColor: '#10b981' },
+                        { label: 'Salah', data: [3, 3, 3, 2, 3, 3, 3, 3, 3, 3], backgroundColor: '#f43f5e' }
+                    ]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true, max: 50 } } }
+            });
+        }
+
+        function forgotPassword() {
+            Swal.fire('Lupa Password', 'Silakan hubungi administrator atau guru pengampu untuk reset kata sandi.', 'info');
+        }
+
+        function logout() { location.reload(); }
+    </script>
+</body>
+</html>
