@@ -23,7 +23,7 @@
     <!-- Main Container -->
     <main class="flex-grow max-w-6xl w-full mx-auto p-4 md:p-6">
 
-        <!-- 1. HALAMAN LOGIN / REGISTRASI -->
+        <!-- 1. HALAMAN LOGIN / REGISTRASI (Dikembalikan ke Semula) -->
         <section id="auth-section" class="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 mt-10">
             <h2 class="text-2xl font-bold text-center text-slate-900 mb-6">Masuk / Pendaftaran CBT</h2>
             
@@ -45,48 +45,62 @@
             </div>
         </section>
 
-        <!-- 2. DASHBOARD UTAMA DENGAN KATALOG SUB-MATERI / MAPEL -->
+        <!-- 2. DASHBOARD UTAMA DENGAN NAVIGASI BERTINGKAT AKADEMIK & PSIKOLOGI -->
         <section id="dashboard-section" class="hidden space-y-6">
             <div class="bg-white rounded-xl shadow p-6 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
                     <h2 class="text-2xl font-bold text-slate-900">Selamat Datang, <span id="display-name" class="text-indigo-600"></span></h2>
-                    <p class="text-sm text-slate-500">Pilih sub-materi atau mapel ujian di bawah ini sesuai peminatan Anda.</p>
+                    <p class="text-sm text-slate-500">Pilih kategori utama ujian di bawah ini.</p>
                 </div>
-                <button onclick="resetDashboard()" class="text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-medium transition flex items-center gap-2">
-                    🔄 Muat Ulang Data
+                <button onclick="resetToMainCategory()" class="text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-medium transition flex items-center gap-2">
+                    🔄 Menu Utama
                 </button>
             </div>
 
-            <!-- KATALOG UTAMA BERBASIS SUB-MATERI / MAPEL -->
-            <div class="bg-white rounded-2xl shadow-sm border p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-                
-                <!-- Kolom Kiri: Daftar Sub-Materi / Mapel -->
-                <div class="lg:col-span-4 border-r pr-0 lg:pr-6 space-y-3">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Sub Materi / Mapel Ujian</h3>
-                    <div id="submateri-list-container" class="space-y-2">
-                        <!-- Diisi dinamis oleh JavaScript -->
-                    </div>
-                </div>
-
-                <!-- Kolom Kanan: Daftar Paket Soal sesuai Sub-Materi yang dipilih -->
-                <div class="lg:col-span-8 space-y-4">
-                    <div class="flex justify-between items-center border-b pb-3">
-                        <div>
-                            <span id="selected-mapel-badge" class="text-xs bg-indigo-100 text-indigo-700 font-semibold px-2.5 py-1 rounded-md">Silakan Pilih Mapel</span>
-                            <h3 id="paket-title" class="text-xl font-bold text-slate-900 mt-1">Daftar Paket Soal</h3>
-                        </div>
-                    </div>
-                    
-                    <div id="paket-soal-container" class="grid grid-cols-1 gap-4">
-                        <div class="p-8 text-center bg-slate-50 rounded-xl border border-dashed text-slate-400">
-                            Pilih salah satu sub-materi atau mapel di sebelah kiri untuk melihat daftar paket soal ujian.
-                        </div>
-                    </div>
-                </div>
-
+            <!-- Breadcrumb Indikator Posisi -->
+            <div id="breadcrumb" class="text-sm text-slate-600 flex items-center gap-2 bg-white px-4 py-3 rounded-lg shadow-sm">
+                <span class="font-semibold text-indigo-600 cursor-pointer" onclick="resetToMainCategory()">Kategori Utama</span>
+                <span id="breadcrumb-sub" class="hidden">/ <span class="font-semibold text-indigo-600" id="current-cat-title"></span></span>
+                <span id="breadcrumb-pkg" class="hidden">/ <span class="font-semibold text-slate-800" id="current-pkg-title"></span></span>
             </div>
 
-            <!-- TABEL RIWAYAT / HASIL UJIAN TERBARU -->
+            <!-- LEVEL 1: PILIH AKADEMIK ATAU PSIKOLOGI -->
+            <div id="level-1-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div onclick="selectMainCategory('Akademik')" class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white p-8 rounded-2xl shadow-lg cursor-pointer transform hover:-translate-y-1 transition">
+                    <div class="text-4xl mb-4">📚</div>
+                    <h3 class="text-2xl font-bold mb-2">Akademik</h3>
+                    <p class="text-blue-100 text-sm">Pengetahuan Umum, Wawasan Kebangsaan, Penalaran Numerik, Bahasa Inggris, dll.</p>
+                </div>
+                <div onclick="selectMainCategory('Psikologi')" class="bg-gradient-to-br from-purple-500 to-indigo-700 text-white p-8 rounded-2xl shadow-lg cursor-pointer transform hover:-translate-y-1 transition">
+                    <div class="text-4xl mb-4">🧠</div>
+                    <h3 class="text-2xl font-bold mb-2">Psikologi</h3>
+                    <p class="text-purple-100 text-sm">Kecerdasan, Kecermatan, Kepribadian, dan tes psikologi lainnya.</p>
+                </div>
+            </div>
+
+            <!-- LEVEL 2: DAFTAR SUB-MATERI / MAPEL BERDASARKAN PILIHAN -->
+            <div id="level-2-container" class="hidden space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-slate-800" id="level-2-heading">Pilih Subtes / Mapel</h3>
+                    <button onclick="resetToMainCategory()" class="text-sm bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg font-medium">← Kembali ke Kategori</button>
+                </div>
+                <div id="submateri-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <!-- Diisi dinamis oleh JavaScript -->
+                </div>
+            </div>
+
+            <!-- LEVEL 3: DAFTAR PAKET SOAL SPESIFIK -->
+            <div id="level-3-container" class="hidden space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-slate-800" id="level-3-heading">Daftar Paket Soal</h3>
+                    <button onclick="backToSubMateri()" class="text-sm bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg font-medium">← Kembali ke Subtes</button>
+                </div>
+                <div id="paket-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Diisi dinamis oleh JavaScript -->
+                </div>
+            </div>
+
+            <!-- TABEL RIWAYAT / HASIL UJIAN TERBARU (Update Real-Time Tanpa Refresh) -->
             <div class="bg-white rounded-xl shadow p-6 mt-8">
                 <h3 class="text-lg font-bold text-slate-800 mb-4">Riwayat Hasil Ujian Anda</h3>
                 <div class="overflow-x-auto">
@@ -107,7 +121,7 @@
             </div>
         </section>
 
-        <!-- 3. HALAMAN MENGERJAKAN UJIAN -->
+        <!-- 4. HALAMAN MENGERJAKAN UJIAN -->
         <section id="exam-section" class="hidden max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8">
             <div class="flex justify-between items-center border-b pb-4 mb-6">
                 <h3 id="active-exam-title" class="text-xl font-bold text-slate-800">Judul Ujian</h3>
@@ -115,11 +129,11 @@
             </div>
             
             <div id="question-container" class="space-y-6">
-                <!-- Pertanyaan Ujian akan dimuat di sini -->
+                <!-- Pertanyaan Ujian -->
             </div>
 
             <div class="mt-8 pt-4 border-t flex justify-end gap-3">
-                <button onclick="cancelExam()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-5 py-2.5 rounded-lg transition">Kembali</button>
+                <button onclick="backToSubMateri()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-5 py-2.5 rounded-lg transition">Batal</button>
                 <button onclick="submitExam()" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2.5 rounded-lg transition shadow">
                     Selesai & Kirim Jawaban
                 </button>
@@ -128,59 +142,63 @@
 
     </main>
 
-    <!-- Script Logika Frontend -->
+    <!-- Script Logika -->
     <script>
         let currentUser = null;
-        let activeMapel = null;
+        let selectedMainCat = null;
+        let selectedSubMateri = null;
         let activeExamTitle = "";
 
-        // Data Mockup Berbasis Sub-Materi / Mapel
-        const databaseMateri = [
-            { 
-                mapel: 'TWK (Wawasan Kebangsaan)', 
-                kategori: 'Akademik',
-                pakets: [
-                    { id: 1, title: 'Paket SKD TWK 01 - Pancasila & UUD 1945', totalSoal: 5, durasi: '15 Menit' },
-                    { id: 2, title: 'Paket SKD TWK 02 - Sejarah Perjuangan Bangsa', totalSoal: 5, durasi: '15 Menit' }
-                ]
-            },
-            { 
-                mapel: 'TIU (Intelegensia Umum)', 
-                kategori: 'Akademik',
-                pakets: [
-                    { id: 3, title: 'Paket SKD TIU 01 - Sinonim & Analogi', totalSoal: 5, durasi: '15 Menit' },
-                    { id: 4, title: 'Paket SKD TIU 02 - Deret Angka & Penalaran', totalSoal: 5, durasi: '15 Menit' }
-                ]
-            },
-            { 
-                mapel: 'Kecerdasan', 
-                kategori: 'Psikologi',
-                pakets: [
-                    { id: 5, title: 'Tes Kecerdasan Angka & Logika', totalSoal: 5, durasi: '10 Menit' }
-                ]
-            },
-            { 
-                mapel: 'Kecermatan', 
-                kategori: 'Psikologi',
-                pakets: [
-                    { id: 6, title: 'Tes Angka Hilang & Simbol', totalSoal: 5, durasi: '5 Menit' }
-                ]
-            },
-            { 
-                mapel: 'Tes Koran (Pauli/Kraepelin)', 
-                kategori: 'Psikologi',
-                pakets: [
-                    { id: 7, title: 'Simulasi Pauly / Kraepelin Dasar', totalSoal: 10, durasi: '10 Menit' }
-                ]
-            },
-            { 
-                mapel: 'Kepribadian (TKP/EPPS)', 
-                kategori: 'Psikologi',
-                pakets: [
-                    { id: 8, title: 'Paket Simulasi TKP Bintara Polri', totalSoal: 5, durasi: '15 Menit' }
-                ]
-            }
-        ];
+        // Database Terstruktur Sesuai Permintaan
+        const databaseMateri = {
+            "Akademik": [
+                {
+                    submateri: "Pengetahuan Umum",
+                    pakets: [
+                        { id: 1, title: "Paket Pengetahuan Umum 01", totalSoal: 5, durasi: "15 Menit" },
+                        { id: 2, title: "Paket Pengetahuan Umum 02", totalSoal: 5, durasi: "15 Menit" }
+                    ]
+                },
+                {
+                    submateri: "Wawasan Kebangsaan",
+                    pakets: [
+                        { id: 3, title: "Paket Wawasan Kebangsaan 01", totalSoal: 5, durasi: "15 Menit" }
+                    ]
+                },
+                {
+                    submateri: "Penalaran Numerik",
+                    pakets: [
+                        { id: 4, title: "Paket Penalaran Numerik Dasar", totalSoal: 5, durasi: "20 Menit" }
+                    ]
+                },
+                {
+                    submateri: "Bahasa Inggris",
+                    pakets: [
+                        { id: 5, title: "Paket Bahasa Inggris Vocabulary & Grammar", totalSoal: 5, durasi: "15 Menit" }
+                    ]
+                }
+            ],
+            "Psikologi": [
+                {
+                    submateri: "Kecerdasan",
+                    pakets: [
+                        { id: 6, title: "Tes Kecerdasan Sinonim, Antonim & Analogi", totalSoal: 5, durasi: "10 Menit" }
+                    ]
+                },
+                {
+                    submateri: "Kecermatan",
+                    pakets: [
+                        { id: 7, title: "Tes Kecermatan Angka Hilang", totalSoal: 5, durasi: "5 Menit" }
+                    ]
+                },
+                {
+                    submateri: "Kepribadian",
+                    pakets: [
+                        { id: 8, title: "Tes Kepribadian TKP / EPPS", totalSoal: 5, durasi: "15 Menit" }
+                    ]
+                }
+            ]
+        };
 
         function handleLogin() {
             const name = document.getElementById('input-name').value.trim();
@@ -195,7 +213,7 @@
             document.getElementById('dashboard-section').classList.remove('hidden');
             document.getElementById('user-info').classList.remove('hidden');
             
-            renderSubMateriList();
+            resetToMainCategory();
         }
 
         function logout() {
@@ -207,58 +225,71 @@
             document.getElementById('input-name').value = '';
         }
 
-        function resetDashboard() {
-            activeMapel = null;
-            renderSubMateriList();
-            document.getElementById('selected-mapel-badge').innerText = "Silakan Pilih Mapel";
-            document.getElementById('paket-title').innerText = "Daftar Paket Soal";
-            document.getElementById('paket-soal-container').innerHTML = `
-                <div class="p-8 text-center bg-slate-50 rounded-xl border border-dashed text-slate-400">
-                    Pilih salah satu sub-materi atau mapel di sebelah kiri untuk melihat daftar paket soal ujian.
+        function resetToMainCategory() {
+            selectedMainCat = null;
+            selectedSubMateri = null;
+            document.getElementById('level-1-container').classList.remove('hidden');
+            document.getElementById('level-2-container').classList.add('hidden');
+            document.getElementById('level-3-container').classList.add('hidden');
+            document.getElementById('breadcrumb-sub').classList.add('hidden');
+            document.getElementById('breadcrumb-pkg').classList.add('hidden');
+        }
+
+        function selectMainCategory(category) {
+            selectedMainCat = category;
+            document.getElementById('level-1-container').classList.add('hidden');
+            document.getElementById('level-2-container').classList.remove('hidden');
+            
+            document.getElementById('breadcrumb-sub').classList.remove('hidden');
+            document.getElementById('current-cat-title').innerText = category;
+            document.getElementById('level-2-heading').innerText = `Pilih Subtes / Mapel: ${category}`;
+
+            const subList = databaseMateri[category];
+            const grid = document.getElementById('submateri-grid');
+            
+            grid.innerHTML = subList.map(item => `
+                <div onclick="selectSubMateri('${item.submateri}')" class="bg-white p-6 rounded-xl border shadow-sm hover:border-indigo-500 cursor-pointer transition">
+                    <h4 class="font-bold text-lg text-slate-800">${item.submateri}</h4>
+                    <p class="text-xs text-slate-500 mt-1">${item.pakets.length} Paket Soal Tersedia</p>
                 </div>
-            `;
+            `).join('');
         }
 
-        function renderSubMateriList() {
-            const container = document.getElementById('submateri-list-container');
-            container.innerHTML = databaseMateri.map((item, index) => {
-                const isActive = activeMapel === item.mapel;
-                return `
-                    <div onclick="selectMapel('${item.mapel}')" class="p-3.5 rounded-xl border cursor-pointer transition flex justify-between items-center ${isActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white hover:bg-slate-50 text-slate-700'}">
+        function selectSubMateri(submateriName) {
+            selectedSubMateri = submateriName;
+            document.getElementById('level-2-container').classList.add('hidden');
+            document.getElementById('level-3-container').classList.remove('hidden');
+            
+            document.getElementById('breadcrumb-pkg').classList.remove('hidden');
+            document.getElementById('current-pkg-title').innerText = submateriName;
+            document.getElementById('level-3-heading').innerText = `Paket Soal: ${submateriName}`;
+
+            const subList = databaseMateri[selectedMainCat];
+            const foundSub = subList.find(s => s.submateri === submateriName);
+            const grid = document.getElementById('paket-grid');
+
+            if(foundSub && foundSub.pakets.length > 0) {
+                grid.innerHTML = foundSub.pakets.map(pkg => `
+                    <div class="bg-white p-5 rounded-xl border shadow-sm flex justify-between items-center">
                         <div>
-                            <p class="font-bold text-sm">${item.mapel}</p>
-                            <span class="text-[10px] ${isActive ? 'text-indigo-200' : 'text-slate-400'}">${item.kategori}</span>
+                            <h5 class="font-bold text-slate-800">${pkg.title}</h5>
+                            <p class="text-xs text-slate-500">${pkg.totalSoal} Soal • Waktu ${pkg.durasi}</p>
                         </div>
-                        <span class="text-xs font-semibold px-2 py-0.5 rounded ${isActive ? 'bg-indigo-700 text-white' : 'bg-slate-100 text-slate-600'}">${item.pakets.length} Paket</span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function selectMapel(mapelName) {
-            activeMapel = mapelName;
-            renderSubMateriList(); // Refresh sidebar untuk highlight item aktif
-
-            const found = databaseMateri.find(m => m.mapel === mapelName);
-            document.getElementById('selected-mapel-badge').innerText = found.kategori.toUpperCase();
-            document.getElementById('paket-title').innerText = `Paket Soal: ${found.mapel}`;
-
-            const pkgContainer = document.getElementById('paket-soal-container');
-            if(found && found.pakets.length > 0) {
-                pkgContainer.innerHTML = found.pakets.map(pkg => `
-                    <div class="bg-white p-5 rounded-xl border shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-indigo-300 transition">
-                        <div>
-                            <h4 class="font-bold text-slate-800 text-base">${pkg.title}</h4>
-                            <p class="text-xs text-slate-500 mt-1">Jumlah: ${pkg.totalSoal} Soal • Estimasi Waktu: ${pkg.durasi}</p>
-                        </div>
-                        <button onclick="startExam('${pkg.title}')" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-semibold transition shadow-sm">
+                        <button onclick="startExam('${pkg.title}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
                             Mulai Ujian
                         </button>
                     </div>
                 `).join('');
             } else {
-                pkgContainer.innerHTML = `<div class="p-8 text-center bg-slate-50 rounded-xl text-slate-400 italic">Belum ada paket soal untuk mapel ini.</div>`;
+                grid.innerHTML = `<p class="text-slate-400 italic col-span-2">Belum ada paket soal.</p>`;
             }
+        }
+
+        function backToSubMateri() {
+            document.getElementById('exam-section').classList.add('hidden');
+            document.getElementById('level-3-container').classList.add('hidden');
+            document.getElementById('level-2-container').classList.remove('hidden');
+            document.getElementById('breadcrumb-pkg').classList.add('hidden');
         }
 
         function startExam(title) {
@@ -267,34 +298,28 @@
             document.getElementById('exam-section').classList.remove('hidden');
             document.getElementById('active-exam-title').innerText = title;
 
-            // Render soal simulasi
             const qContainer = document.getElementById('question-container');
             qContainer.innerHTML = `
                 <div class="p-5 bg-slate-50 rounded-xl border">
-                    <p class="font-semibold text-slate-800 mb-3">1. Contoh Pertanyaan untuk ${title}</p>
+                    <p class="font-semibold text-slate-800 mb-3">1. Soal simulasi untuk: ${title}</p>
                     <div class="space-y-2 text-sm">
-                        <label class="block p-3 rounded-lg border bg-white cursor-pointer hover:bg-indigo-50"><input type="radio" name="q1" value="A"> A. Pilihan jawaban pertama</label>
-                        <label class="block p-3 rounded-lg border bg-white cursor-pointer hover:bg-indigo-50"><input type="radio" name="q1" value="B"> B. Pilihan jawaban kedua yang benar</label>
-                        <label class="block p-3 rounded-lg border bg-white cursor-pointer hover:bg-indigo-50"><input type="radio" name="q1" value="C"> C. Pilihan jawaban ketiga</label>
+                        <label class="block p-3 rounded-lg border bg-white cursor-pointer hover:bg-indigo-50"><input type="radio" name="q1" value="A"> A. Pilihan jawaban A</label>
+                        <label class="block p-3 rounded-lg border bg-white cursor-pointer hover:bg-indigo-50"><input type="radio" name="q1" value="B"> B. Pilihan jawaban B (Benar)</label>
+                        <label class="block p-3 rounded-lg border bg-white cursor-pointer hover:bg-indigo-50"><input type="radio" name="q1" value="C"> C. Pilihan jawaban C</label>
                     </div>
                 </div>
             `;
         }
 
-        function cancelExam() {
-            if(!confirm("Keluar dari ujian? Progres Anda tidak akan tersimpan.")) return;
-            document.getElementById('exam-section').classList.add('hidden');
-            document.getElementById('dashboard-section').classList.remove('hidden');
-        }
-
         function submitExam() {
             if(!confirm("Yakin ingin menyelesaikan ujian dan mengirim jawaban?")) return;
 
-            const finalScore = Math.floor(Math.random() * (100 - 75 + 1)) + 75;
+            const finalScore = Math.floor(Math.random() * (100 - 80 + 1)) + 80;
             const nowTime = new Date().toLocaleTimeString();
 
             document.getElementById('exam-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('hidden');
+            resetToMainCategory();
 
             const tbody = document.getElementById('history-table-body');
             if(tbody.innerHTML.includes("Belum ada riwayat")) {
@@ -311,7 +336,7 @@
             `;
             tbody.prepend(newRow);
 
-            alert(`Ujian Selesai! Skor Anda: ${finalScore}. Hasil telah diperbarui secara otomatis di riwayat.`);
+            alert(`Ujian Selesai! Skor Anda: ${finalScore}. Hasil otomatis masuk ke tabel riwayat.`);
         }
     </script>
 </body>
